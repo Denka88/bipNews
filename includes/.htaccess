@@ -1,0 +1,8 @@
+# Отключение листинга директорий
+Options -Indexes
+
+# Блокировка прямого доступа ко всем PHP-файлам
+<FilesMatch "^.*\.php$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
