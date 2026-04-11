@@ -98,6 +98,7 @@ require '../includes/header.php';
         <a href="news_create.php">Создать новость</a>
         <a href="news_manage.php" class="active">Все новости</a>
         <a href="comments_manage.php">Все комментарии</a>
+        <a href="feedback.php">Обратная связь</a>
         <a href="users.php">Пользователи</a>
         <a href="banners.php">Баннеры</a>
         <a href="../index.php" class="nav-site-link">На сайт <i class="fas fa-external-link-alt"></i></a>

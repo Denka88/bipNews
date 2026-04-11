@@ -60,23 +60,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Пагинация
-$page = max(1, (int)($_GET['page'] ?? 1));
-$perPage = 20;
-$offset = ($page - 1) * $perPage;
+// Пагинация и фильтрация
+$page     = max(1, (int)($_GET['page'] ?? 1));
+$perPage  = 20;
+$offset   = ($page - 1) * $perPage;
 
-// Получаем общее количество пользователей
-$totalStmt = $pdo->query("SELECT COUNT(*) FROM users");
-$totalUsers = $totalStmt->fetchColumn();
-$totalPages = ceil($totalUsers / $perPage);
+$search   = trim($_GET['search'] ?? '');
+$role     = $_GET['role'] ?? '';        // user, moderator, admin
+$status   = $_GET['status'] ?? '';      // active, banned
+
+// WHERE
+$where  = [];
+$params = [];
+
+if ($search !== '') {
+    $where[] = '(username LIKE ? OR full_name LIKE ? OR email LIKE ?)';
+    $params[] = '%' . $search . '%';
+    $params[] = '%' . $search . '%';
+    $params[] = '%' . $search . '%';
+}
+
+if ($role !== '') {
+    $where[] = 'role = ?';
+    $params[] = $role;
+}
+
+if ($status === 'active') {
+    $where[] = 'is_banned = 0';
+} elseif ($status === 'banned') {
+    $where[] = 'is_banned = 1';
+}
+
+$whereSQL = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+// Общее количество
+$countStmt = $pdo->prepare("SELECT COUNT(*) FROM users $whereSQL");
+$countStmt->execute($params);
+$totalUsers = (int)$countStmt->fetchColumn();
+$totalPages = max(1, ceil($totalUsers / $perPage));
 
 // Получаем пользователей
 $stmt = $pdo->prepare("
-    SELECT * FROM users 
-    ORDER BY created_at DESC 
+    SELECT * FROM users
+    $whereSQL
+    ORDER BY created_at DESC
     LIMIT ? OFFSET ?
 ");
-$stmt->execute([$perPage, $offset]);
+$stmt->execute(array_merge($params, [$perPage, $offset]));
 $users = $stmt->fetchAll();
 
 $pageTitle = 'Управление пользователями - Админ-панель';
@@ -91,6 +121,7 @@ require '../includes/header.php';
         <a href="news_create.php">Создать новость</a>
         <a href="news_manage.php">Все новости</a>
         <a href="comments_manage.php">Все комментарии</a>
+        <a href="feedback.php">Обратная связь</a>
         <a href="users.php" class="active">Пользователи</a>
         <a href="banners.php">Баннеры</a>
         <a href="../index.php" class="nav-site-link">На сайт <i class="fas fa-external-link-alt"></i></a>
@@ -103,11 +134,48 @@ require '../includes/header.php';
     <?php if ($error): ?>
         <div class="form-error"><?= e($error) ?></div>
     <?php endif; ?>
-    
+
+    <!-- Фильтры -->
+    <div class="admin-filters">
+        <form method="GET" class="filter-form">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="search">Поиск</label>
+                    <input type="text" id="search" name="search" placeholder="Логин, имя, email..." value="<?= e($search) ?>">
+                </div>
+
+                <div class="filter-group">
+                    <label for="role">Роль</label>
+                    <select id="role" name="role">
+                        <option value="">Все роли</option>
+                        <option value="user" <?= $role === 'user' ? 'selected' : '' ?>>Пользователь</option>
+                        <option value="moderator" <?= $role === 'moderator' ? 'selected' : '' ?>>Модератор</option>
+                        <option value="admin" <?= $role === 'admin' ? 'selected' : '' ?>>Администратор</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="status">Статус</label>
+                    <select id="status" name="status">
+                        <option value="">Все</option>
+                        <option value="active" <?= $status === 'active' ? 'selected' : '' ?>>Активные</option>
+                        <option value="banned" <?= $status === 'banned' ? 'selected' : '' ?>>Заблокированные</option>
+                    </select>
+                </div>
+
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-accent btn-small">Применить</button>
+                    <a href="users.php" class="btn btn-small">Сбросить</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
     <?php if (empty($users)): ?>
-        <p style="color: #999;">Пользователей пока нет</p>
+        <p style="color: #999;">Пользователей не найдено</p>
     <?php else: ?>
         <table class="admin-table users-table">
+            <caption style="text-align:left; padding:10px 16px; font-size:14px; color:#666;">Найдено: <strong><?= $totalUsers ?></strong></caption>
             <thead>
                 <tr>
                     <th>ID</th>
@@ -177,23 +245,35 @@ require '../includes/header.php';
         </table>
         
         <?php if ($totalPages > 1): ?>
-            <div class="pagination" style="margin-top: 30px; display: flex; justify-content: center; gap: 10px;">
+            <div class="admin-pagination">
+                <?php
+                $queryParams = http_build_query(array_filter([
+                    'search' => $search,
+                    'role'   => $role,
+                    'status' => $status,
+                ]));
+                $qs = $queryParams ? '&' . $queryParams : '';
+                ?>
                 <?php if ($page > 1): ?>
-                    <a href="?page=<?= $page - 1 ?>" class="btn">← Назад</a>
+                    <a href="?page=<?= $page - 1 ?><?= $qs ?>" class="btn btn-small">← Назад</a>
                 <?php endif; ?>
-                
-                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+
+                <?php
+                $startPage = max(1, $page - 2);
+                $endPage = min($totalPages, $page + 2);
+                if ($startPage > 1) echo '<span style="padding: 5px 10px;">...</span>';
+                ?>
+                <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
                     <?php if ($i == $page): ?>
-                        <span class="btn btn-accent"><?= $i ?></span>
-                    <?php elseif ($i == 1 || $i == $totalPages || abs($i - $page) <= 2): ?>
-                        <a href="?page=<?= $i ?>" class="btn"><?= $i ?></a>
-                    <?php elseif (abs($i - $page) == 3): ?>
-                        <span style="padding: 10px;">...</span>
+                        <span class="btn btn-accent btn-small"><?= $i ?></span>
+                    <?php else: ?>
+                        <a href="?page=<?= $i ?><?= $qs ?>" class="btn btn-small"><?= $i ?></a>
                     <?php endif; ?>
                 <?php endfor; ?>
-                
+                <?php if ($endPage < $totalPages) echo '<span style="padding: 5px 10px;">...</span>'; ?>
+
                 <?php if ($page < $totalPages): ?>
-                    <a href="?page=<?= $page + 1 ?>" class="btn">Вперед →</a>
+                    <a href="?page=<?= $page + 1 ?><?= $qs ?>" class="btn btn-small">Вперед →</a>
                 <?php endif; ?>
             </div>
         <?php endif; ?>

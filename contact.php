@@ -1,6 +1,12 @@
 <?php
 require_once 'includes/functions.php';
 
+// Проверяем, настроена ли reCAPTCHA
+$recaptchaSiteKey = defined('RECAPTCHA_SITE_KEY') ? RECAPTCHA_SITE_KEY : '';
+$recaptchaSecretKey = defined('RECAPTCHA_SECRET_KEY') ? RECAPTCHA_SECRET_KEY : '';
+$isRecaptchaConfigured = $recaptchaSiteKey !== '' && $recaptchaSiteKey !== 'ВАШ_SITE_KEY'
+    && $recaptchaSecretKey !== '' && $recaptchaSecretKey !== 'ВАШ_SECRET_KEY';
+
 $success = null;
 $error = null;
 
@@ -9,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $subject = trim($_POST['subject'] ?? '');
     $message = trim($_POST['message'] ?? '');
-    
+
     if (empty($name)) {
         $error = 'Укажите ваше имя';
     } elseif (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -21,12 +27,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (strlen($message) < 10) {
         $error = 'Сообщение слишком короткое (минимум 10 символов)';
     }
-    
+
+    // Проверка reCAPTCHA
+    if (empty($error) && $isRecaptchaConfigured) {
+        $recaptchaResponse = $_POST['g-recaptcha-response'] ?? '';
+        if (empty($recaptchaResponse)) {
+            $error = 'Подтвердите, что вы не робот';
+        } else {
+            $verifyUrl = 'https://www.google.com/recaptcha/api/siteverify';
+            $data = http_build_query([
+                'secret'   => $recaptchaSecretKey,
+                'response' => $recaptchaResponse,
+                'remoteip' => $_SERVER['REMOTE_ADDR'] ?? '',
+            ]);
+
+            $context = stream_context_create([
+                'http' => [
+                    'method'  => 'POST',
+                    'header'  => "Content-Type: application/x-www-form-urlencoded\r\n",
+                    'content' => $data,
+                    'timeout' => 10,
+                ],
+            ]);
+
+            $response = @file_get_contents($verifyUrl, false, $context);
+            if ($response === false) {
+                $error = 'Ошибка проверки reCAPTCHA';
+            } else {
+                $result = json_decode($response, true);
+                if (!($result['success'] ?? false)) {
+                    $error = 'Не пройдена проверка reCAPTCHA';
+                }
+            }
+        }
+    }
+
     if (empty($error)) {
-        // Здесь можно добавить сохранение в БД или отправку на почту
-        // Для примера просто показываем успех
-        $success = 'Ваше сообщение успешно отправлено! Мы ответим вам в ближайшее время.';
-        $_POST = [];
+        $pdo = getDB();
+
+        // Создаём таблицу, если ещё не существует
+        $pdo->exec("
+            CREATE TABLE IF NOT EXISTS feedback_messages (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                email VARCHAR(255) NOT NULL,
+                subject VARCHAR(255) NOT NULL,
+                message TEXT NOT NULL,
+                is_read TINYINT(1) DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ");
+
+        $stmt = $pdo->prepare("INSERT INTO feedback_messages (name, email, subject, message) VALUES (?, ?, ?, ?)");
+        try {
+            $stmt->execute([$name, $email, $subject, $message]);
+            $success = 'Ваше сообщение успешно отправлено! Мы ответим вам в ближайшее время.';
+            $_POST = [];
+        } catch (PDOException $e) {
+            $error = 'Ошибка при отправке сообщения. Попробуйте позже.';
+        }
     }
 }
 
@@ -70,7 +129,15 @@ require 'includes/header.php';
                 <label for="message">Сообщение *</label>
                 <textarea id="message" name="message" required placeholder="Введите ваше сообщение..." style="min-height: 200px;"><?= e($_POST['message'] ?? '') ?></textarea>
             </div>
-            
+
+            <?php if ($isRecaptchaConfigured): ?>
+            <div class="form-group">
+                <div class="recaptcha-wrapper">
+                    <div class="g-recaptcha" data-sitekey="<?= e($recaptchaSiteKey) ?>"></div>
+                </div>
+            </div>
+            <?php endif; ?>
+
             <button type="submit" class="btn btn-accent">Отправить сообщение</button>
         </form>
         
@@ -112,5 +179,9 @@ require 'includes/header.php';
         </div>
     </div>
 </div>
+
+<?php if ($isRecaptchaConfigured): ?>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<?php endif; ?>
 
 <?php require 'includes/footer.php'; ?>

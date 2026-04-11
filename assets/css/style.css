@@ -1054,6 +1054,14 @@ img {
     margin-top: 20px;
 }
 
+/* reCAPTCHA */
+.recaptcha-wrapper {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 10px;
+    overflow: visible;
+}
+
 /* ========================================
    Профиль пользователя
    ======================================== */

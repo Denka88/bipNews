@@ -6,6 +6,12 @@ if (isLoggedIn()) {
     redirect('index.php');
 }
 
+// Проверяем, настроена ли reCAPTCHA
+$recaptchaSiteKey = defined('RECAPTCHA_SITE_KEY') ? RECAPTCHA_SITE_KEY : '';
+$recaptchaSecretKey = defined('RECAPTCHA_SECRET_KEY') ? RECAPTCHA_SECRET_KEY : '';
+$isRecaptchaConfigured = $recaptchaSiteKey !== '' && $recaptchaSiteKey !== 'ВАШ_SITE_KEY'
+    && $recaptchaSecretKey !== '' && $recaptchaSecretKey !== 'ВАШ_SECRET_KEY';
+
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -44,7 +50,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($password !== $passwordConfirm) {
         $errors[] = 'Пароли не совпадают';
     }
-    
+
+    // Проверка reCAPTCHA
+    if (empty($errors) && $isRecaptchaConfigured) {
+        $recaptchaResponse = $_POST['g-recaptcha-response'] ?? '';
+        if (empty($recaptchaResponse)) {
+            $errors[] = 'Подтвердите, что вы не робот';
+        } else {
+            $verifyUrl = 'https://www.google.com/recaptcha/api/siteverify';
+            $data = http_build_query([
+                'secret'   => $recaptchaSecretKey,
+                'response' => $recaptchaResponse,
+                'remoteip' => $_SERVER['REMOTE_ADDR'] ?? '',
+            ]);
+
+            $context = stream_context_create([
+                'http' => [
+                    'method'  => 'POST',
+                    'header'  => "Content-Type: application/x-www-form-urlencoded\r\n",
+                    'content' => $data,
+                    'timeout' => 10,
+                ],
+            ]);
+
+            $response = @file_get_contents($verifyUrl, false, $context);
+            if ($response === false) {
+                $errors[] = 'Ошибка проверки reCAPTCHA';
+            } else {
+                $result = json_decode($response, true);
+                if (!($result['success'] ?? false)) {
+                    $errors[] = 'Не пройдена проверка reCAPTCHA';
+                }
+            }
+        }
+    }
+
     // Проверка уникальности username
     if (empty($errors)) {
         $pdo = getDB();
@@ -143,7 +183,20 @@ require 'includes/header.php';
             <label for="password-confirm">Подтверждение пароля *</label>
             <input type="password" id="password-confirm" name="password_confirm" required minlength="6">
         </div>
-        
+
+        <?php
+        $recaptchaSiteKey = defined('RECAPTCHA_SITE_KEY') ? RECAPTCHA_SITE_KEY : '';
+        $isRecaptchaConfigured = $recaptchaSiteKey !== '' && $recaptchaSiteKey !== 'ВАШ_SITE_KEY';
+        ?>
+
+        <?php if ($isRecaptchaConfigured): ?>
+        <div class="form-group">
+            <div class="recaptcha-wrapper">
+                <div class="g-recaptcha" data-sitekey="<?= e($recaptchaSiteKey) ?>"></div>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <button type="submit" class="btn btn-accent" style="width: 100%;">Зарегистрироваться</button>
     </form>
     
@@ -151,5 +204,9 @@ require 'includes/header.php';
         <p>Уже есть аккаунт? <a href="login.php">Войти</a></p>
     </div>
 </div>
+
+<?php if ($isRecaptchaConfigured): ?>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<?php endif; ?>
 
 <?php require 'includes/footer.php'; ?>
