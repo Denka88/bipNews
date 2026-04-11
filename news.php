@@ -45,7 +45,7 @@ $totalCommentPages = ceil($totalCommentsCount / $commentsPerPage);
 // Порядок сортировки
 $orderBy = ($commentSort === 'popular')
     ? "(SELECT SUM(CASE WHEN vote_type = 'like' THEN 1 ELSE 0 END) - SUM(CASE WHEN vote_type = 'dislike' THEN 1 ELSE 0 END) FROM comment_votes cv WHERE cv.comment_id = c.id) DESC, c.created_at DESC"
-    : "c.created_at ASC";
+    : "c.created_at DESC";
 
 $commentsStmt = $pdo->prepare("
     SELECT c.*, u.username, u.avatar, u.role

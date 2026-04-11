@@ -200,7 +200,7 @@ if ($action === 'list') {
     
     $orderBy = ($sort === 'popular')
         ? "(SELECT COALESCE(SUM(CASE WHEN vote_type = 'like' THEN 1 ELSE -1 END), 0) FROM comment_votes cv WHERE cv.comment_id = c.id) DESC, c.created_at DESC"
-        : "c.created_at ASC";
+        : "c.created_at DESC";
     
     $commentsStmt = $pdo->prepare("
         SELECT c.*, u.username, u.avatar, u.role
