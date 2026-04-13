@@ -170,7 +170,7 @@ require 'includes/header.php';
         
         <div class="form-group">
             <label for="birth-date">Дата рождения *</label>
-            <input type="date" id="birth-date" name="birth_date" required max="<?= date('Y-m-d', strtotime('-14 years')) ?>">
+            <input type="date" id="birth-date" name="birth_date" required max="<?= date('Y-m-d', strtotime('-14 years')) ?>" value="<?= e($_POST['birth_date'] ?? '') ?>">
             <small>Регистрация доступна только для пользователей старше 14 лет</small>
         </div>
         
