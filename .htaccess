@@ -1,0 +1,23 @@
+# Обработка ошибки 404
+ErrorDocument 404 /404.php
+
+# Запрет доступа к скрытым файлам
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Запрет просмотра содержимого директорий
+Options -Indexes
+
+# Включение mod_rewrite (если нужно для будущих ЧПУ)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Если файл или директория существуют - отдаём их
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # Иначе перенаправляем на 404
+    RewriteRule ^(.*)$ /404.php [L]
+</IfModule>

@@ -13,9 +13,7 @@ $stmt->execute([$newsId]);
 $news = $stmt->fetch();
 
 if (!$news) {
-    http_response_code(404);
-    echo "Новость не найдена";
-    exit;
+    redirect404();
 }
 
 $errors = [];

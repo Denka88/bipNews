@@ -48,6 +48,12 @@ function redirect($url) {
     exit;
 }
 
+// Перенаправление на страницу 404
+function redirect404() {
+    header("Location: /404.php");
+    exit;
+}
+
 // Проверка возраста (минимум 14 лет)
 function checkAge($birthDate) {
     $birth = new DateTime($birthDate);

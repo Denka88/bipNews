@@ -16,9 +16,7 @@ $stmt->execute([$userId]);
 $profileUser = $stmt->fetch();
 
 if (!$profileUser) {
-    http_response_code(404);
-    echo "Пользователь не найден";
-    exit;
+    redirect404();
 }
 
 // Обработка редактирования профиля (только для своего профиля)
