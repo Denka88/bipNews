@@ -7,7 +7,6 @@ if (!hasMinimumRole('admin')) {
 
 $pdo = getDB();
 
-// Параметры поиска и фильтрации
 $search   = trim($_GET['search'] ?? '');
 $authorId = (int)($_GET['author'] ?? 0);
 $sortBy   = in_array($_GET['sort'] ?? '', ['created_at', 'views', 'title']) ? $_GET['sort'] : 'created_at';
@@ -16,7 +15,6 @@ $page     = max(1, (int)($_GET['page'] ?? 1));
 $perPage  = 15;
 $offset   = ($page - 1) * $perPage;
 
-// Формируем WHERE
 $where  = [];
 $params = [];
 
@@ -33,13 +31,11 @@ if ($authorId > 0) {
 
 $whereSQL = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
-// Общее количество
 $countStmt = $pdo->prepare("SELECT COUNT(*) FROM news n $whereSQL");
 $countStmt->execute($params);
 $totalNews = (int)$countStmt->fetchColumn();
 $totalPages = max(1, ceil($totalNews / $perPage));
 
-// Список новостей
 $newsStmt = $pdo->prepare("
     SELECT n.*, u.username
     FROM news n
@@ -52,15 +48,12 @@ $newsParams = array_merge($params, [$perPage, $offset]);
 $newsStmt->execute($newsParams);
 $newsList = $newsStmt->fetchAll();
 
-// Авторы для фильтра
 $authorsStmt = $pdo->query("SELECT id, username FROM users ORDER BY username ASC");
 $authors = $authorsStmt->fetchAll();
 
-// Удаление (POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
     $deleteId = (int)$_POST['delete_id'];
 
-    // Получаем картинки
     $imgStmt = $pdo->prepare("SELECT images FROM news WHERE id = ?");
     $imgStmt->execute([$deleteId]);
     $newsRow = $imgStmt->fetch();
@@ -75,7 +68,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
         }
     }
 
-    // Удаляем комментарии и голоса
     $pdo->prepare("DELETE FROM comment_votes WHERE comment_id IN (SELECT id FROM comments WHERE news_id = ?)")->execute([$deleteId]);
     $pdo->prepare("DELETE FROM comments WHERE news_id = ?")->execute([$deleteId]);
     $pdo->prepare("DELETE FROM news WHERE id = ?")->execute([$deleteId]);

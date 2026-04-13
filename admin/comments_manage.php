@@ -7,7 +7,6 @@ if (!hasMinimumRole('admin')) {
 
 $pdo = getDB();
 
-// Параметры поиска и фильтрации
 $search    = trim($_GET['search'] ?? '');
 $userId    = (int)($_GET['user'] ?? 0);
 $newsId    = (int)($_GET['news'] ?? 0);
@@ -17,7 +16,6 @@ $page      = max(1, (int)($_GET['page'] ?? 1));
 $perPage   = 20;
 $offset    = ($page - 1) * $perPage;
 
-// Формируем WHERE
 $where  = [];
 $params = [];
 
@@ -39,13 +37,11 @@ if ($newsId > 0) {
 
 $whereSQL = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
-// Общее количество
 $countStmt = $pdo->prepare("SELECT COUNT(*) FROM comments c LEFT JOIN users u ON c.user_id = u.id $whereSQL");
 $countStmt->execute($params);
 $totalComments = (int)$countStmt->fetchColumn();
 $totalPages = max(1, ceil($totalComments / $perPage));
 
-// Список комментариев
 $commentsStmt = $pdo->prepare("
     SELECT c.*, u.username, u.avatar, u.role, n.title as news_title, n.slug as news_slug
     FROM comments c
@@ -59,19 +55,15 @@ $commentsParams = array_merge($params, [$perPage, $offset]);
 $commentsStmt->execute($commentsParams);
 $commentsList = $commentsStmt->fetchAll();
 
-// Пользователи для фильтра
 $usersStmt = $pdo->query("SELECT id, username FROM users ORDER BY username ASC");
 $users = $usersStmt->fetchAll();
 
-// Новости для фильтра
 $newsStmt = $pdo->query("SELECT id, title FROM news ORDER BY created_at DESC LIMIT 200");
 $newsItems = $newsStmt->fetchAll();
 
-// Удаление (POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
     $deleteId = (int)$_POST['delete_id'];
 
-    // Удаляем голоса и комментарий
     $pdo->prepare("DELETE FROM comment_votes WHERE comment_id = ?")->execute([$deleteId]);
     $pdo->prepare("DELETE FROM comments WHERE id = ?")->execute([$deleteId]);
 
@@ -79,7 +71,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
     exit;
 }
 
-// Массовое удаление
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_delete']) && !empty($_POST['comment_ids'])) {
     $ids = array_map('intval', $_POST['comment_ids']);
     $placeholders = implode(',', array_fill(0, count($ids), '?'));
@@ -265,7 +256,6 @@ require '../includes/header.php';
 </div>
 
 <script>
-// Чекбоксы
 const selectAllCheckbox = document.getElementById('select-all-checkbox');
 const checkboxes = document.querySelectorAll('.comment-checkbox');
 const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
@@ -295,7 +285,6 @@ if (selectAllBtn) {
 
 checkboxes.forEach(cb => cb.addEventListener('change', updateBulkButton));
 
-// Массовое удаление
 bulkDeleteBtn.addEventListener('click', function() {
     if (!confirm('Удалить выбранные комментарии?')) return;
 
@@ -308,7 +297,6 @@ bulkDeleteBtn.addEventListener('click', function() {
     form.submit();
 });
 
-// Одиночное удаление
 function deleteComment(commentId) {
     if (!confirm('Удалить этот комментарий?')) return;
 

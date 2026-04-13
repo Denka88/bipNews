@@ -3,7 +3,6 @@ require_once 'includes/functions.php';
 
 $pdo = getDB();
 
-// Получаем новость по slug
 $slug = $_GET['slug'] ?? '';
 
 if (empty($slug)) {
@@ -23,24 +22,20 @@ if (!$news) {
     redirect404();
 }
 
-// Увеличиваем счетчик просмотров
 $updateStmt = $pdo->prepare("UPDATE news SET views = views + 1 WHERE id = ?");
 $updateStmt->execute([$news['id']]);
 $news['views']++;
 
-// Пагинация и сортировка комментариев
 $commentSort = $_GET['comment_sort'] ?? 'new';
 $commentPage = max(1, (int)($_GET['comment_page'] ?? 1));
 $commentsPerPage = 10;
 $commentOffset = ($commentPage - 1) * $commentsPerPage;
 
-// Общее количество комментариев
 $totalCommentsStmt = $pdo->prepare("SELECT COUNT(*) FROM comments WHERE news_id = ?");
 $totalCommentsStmt->execute([$news['id']]);
 $totalCommentsCount = (int)$totalCommentsStmt->fetchColumn();
 $totalCommentPages = ceil($totalCommentsCount / $commentsPerPage);
 
-// Порядок сортировки
 $orderBy = ($commentSort === 'popular')
     ? "(SELECT SUM(CASE WHEN vote_type = 'like' THEN 1 ELSE 0 END) - SUM(CASE WHEN vote_type = 'dislike' THEN 1 ELSE 0 END) FROM comment_votes cv WHERE cv.comment_id = c.id) DESC, c.created_at DESC"
     : "c.created_at DESC";
@@ -56,7 +51,6 @@ $commentsStmt = $pdo->prepare("
 $commentsStmt->execute([$news['id'], $commentsPerPage, $commentOffset]);
 $comments = $commentsStmt->fetchAll();
 
-// Обработка формы комментария
 $commentError = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_comment'])) {
@@ -75,8 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_comment'])) {
             $insertStmt = $pdo->prepare("INSERT INTO comments (news_id, user_id, content) VALUES (?, ?, ?)");
             try {
                 $insertStmt->execute([$news['id'], $_SESSION['user_id'], $commentContent]);
-                
-                // Перенаправляем на первую страницу с текущей сортировкой
+
                 $redirectUrl = $_SERVER['PHP_SELF'] . '?slug=' . urlencode($news['slug']) . '&comment_sort=' . $commentSort;
                 header("Location: $redirectUrl");
                 exit;
@@ -106,13 +99,6 @@ require 'includes/header.php';
         <?= str_replace('../uploads/news/', 'uploads/news/', $news['content']) ?>
     </div>
 </article>
-
-<?php
-// Проверяем, был ли контент санитизирован (простая проверка: если есть <script>, то нет)
-// Для старых новостей, которые могли быть сохранены без санитизации,
-// санитизация применяется при каждом редактировании.
-// Дополнительно CSP-заголовок защищает от исполнения скриптов.
-?>
 
 <!-- Секция комментариев -->
 <section class="comments-section">
@@ -234,7 +220,6 @@ require 'includes/header.php';
 </section>
 
 <script>
-// Отправка комментария через AJAX без перезагрузки
 const commentForm = document.getElementById('comment-form');
 if (commentForm) {
     commentForm.addEventListener('submit', function(e) {
@@ -262,14 +247,12 @@ if (commentForm) {
         .then(data => {
             if (data.success) {
                 textarea.value = '';
-                
-                // Если был блок "нет комментариев" — удаляем
+
                 const noComments = document.querySelector('.no-comments');
                 if (noComments) {
                     noComments.remove();
                 }
-                
-                // Создаём или добавляем в список
+
                 let list = document.querySelector('.comments-list');
                 if (!list) {
                     list = document.createElement('div');
@@ -282,8 +265,7 @@ if (commentForm) {
                         section.insertBefore(list, section.querySelector('.comment-pagination'));
                     }
                 }
-                
-                // Создаём HTML нового комментария
+
                 const roleBadge = data.role === 'admin'
                     ? '<span class="comment-role-badge admin"><i class="fas fa-crown"></i> Администратор</span>'
                     : data.role === 'moderator'
@@ -319,22 +301,18 @@ if (commentForm) {
                         </div>
                     </div>
                 `;
-                
-                // Вставляем в начало списка
+
                 list.insertAdjacentHTML('afterbegin', commentHTML);
-                
-                // Обновляем счётчик
+
                 const title = document.querySelector('.comments-title');
                 if (title) title.textContent = 'Комментарии (' + data.totalCount + ')';
-                
-                // Анимация появления
+
                 const newEl = document.getElementById('comment-' + data.id);
                 if (newEl) {
                     requestAnimationFrame(() => {
                         newEl.style.opacity = '1';
                         newEl.style.transform = 'translateY(0)';
                     });
-                    // Прокрутка к новому комментарию
                     newEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
             } else {
@@ -351,7 +329,6 @@ if (commentForm) {
     });
 }
 
-// Фильтры комментариев
 document.querySelectorAll('.comment-filters .filter-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         const sort = this.dataset.sort;
@@ -359,7 +336,6 @@ document.querySelectorAll('.comment-filters .filter-btn').forEach(btn => {
     });
 });
 
-// Пагинация комментариев (делегирование)
 document.addEventListener('click', function(e) {
     if (e.target.closest('.comment-pagination a')) {
         e.preventDefault();
@@ -402,12 +378,10 @@ function loadComments(sort, page) {
                 if (data.pagination) {
                     section.insertAdjacentHTML('beforeend', data.pagination);
                 }
-                
-                // Обновляем счётчик
+
                 const title = section.querySelector('.comments-title');
                 if (title) title.textContent = 'Комментарии (' + data.totalCount + ')';
-                
-                // Обновляем активные фильтры
+
                 section.querySelectorAll('.comment-filters .filter-btn').forEach(b => b.classList.remove('active'));
                 const activeBtn = section.querySelector(`.filter-btn[data-sort="${sort}"]`);
                 if (activeBtn) activeBtn.classList.add('active');

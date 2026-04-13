@@ -1,8 +1,3 @@
-/* ========================================
-   BipNews - Основные стили
-   Цвета: Белый (#FFFFFF), Черный (#000000), Оранжевый (#FFB841)
-   ======================================== */
-
 @font-face {
     font-family: 'Tilda Sans';
     src: url('../fonts/tilda-sans_regular.ttf') format('truetype');
@@ -52,7 +47,6 @@
     font-style: normal;
 }
 
-/* Сброс и базовые стили */
 * {
     margin: 0;
     padding: 0;
@@ -86,14 +80,12 @@ img {
     height: auto;
 }
 
-/* Контейнер */
 .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
 }
 
-/* Широкий контейнер */
 .wide-container {
     max-width: 1400px;
     margin: 2rem auto;
@@ -101,14 +93,12 @@ img {
     padding-top: 30px;
 }
 
-/* На главной wide-container идёт сразу после hero-slider — без верхнего отступа */
+
 .hero-slider + .wide-container {
     padding-top: 0;
 }
 
-/* ========================================
-   Слайдер баннеров (Hero Slider)
-   ======================================== */
+
 .hero-slider {
     width: 100vw;
     margin-left: calc(-50vw + 50%);
@@ -118,7 +108,7 @@ img {
     height: 550px;
 }
 
-/* Слайды (задний план) */
+
 .slider-track {
     position: absolute;
     top: 0;
@@ -154,7 +144,7 @@ img {
     background: #000;
 }
 
-/* Затемнение картинок */
+
 .slide-overlay {
     position: absolute;
     top: 0;
@@ -165,7 +155,7 @@ img {
     z-index: 1;
 }
 
-/* Приветствие поверх слайдера */
+
 .hero-overlay {
     position: relative;
     z-index: 10;
@@ -292,9 +282,7 @@ img {
     background: #FFB841;
 }
 
-/* ========================================
-   Шапка сайта
-   ======================================== */
+
 .header {
     background: #FFFFFF;
     border-bottom: 1px solid #000000;
@@ -388,9 +376,7 @@ img {
     background: #333333;
 }
 
-/* ========================================
-   Новости: карточки и полные
-   ======================================== */
+
 
 .news-card-meta span i,
 .news-full-meta span i {
@@ -398,9 +384,7 @@ img {
     color: #FFB841;
 }
 
-/* ========================================
-   Формы
-   ======================================== */
+
 .main-content {
     flex: 1;
     padding: 30px 0;
@@ -414,9 +398,7 @@ img {
     border-bottom: 1px solid #FFB841;
 }
 
-/* ========================================
-   Подвал
-   ======================================== */
+
 .footer {
     background: #000000;
     color: #FFFFFF;
@@ -444,9 +426,7 @@ img {
     color: #FFFFFF;
 }
 
-/* ========================================
-   Кнопки
-   ======================================== */
+
 .btn {
     display: inline-block;
     padding: 10px 20px;
@@ -487,9 +467,7 @@ img {
     font-size: 14px;
 }
 
-/* ========================================
-   Формы
-   ======================================== */
+
 .form-group {
     margin-bottom: 20px;
 }
@@ -529,7 +507,7 @@ img {
     border-radius: var(--radius);
 }
 
-/* Кнопки */
+
 .btn,
 .btn-accent,
 .btn-danger,
@@ -556,9 +534,7 @@ img {
     margin-bottom: 20px;
 }
 
-/* ========================================
-   Сетка новостей (главная)
-   ======================================== */
+
 .news-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -632,9 +608,7 @@ img {
     color: #FFB841;
 }
 
-/* ========================================
-   Страница новости
-   ======================================== */
+
 .news-full {
     max-width: 900px;
 }
@@ -711,9 +685,7 @@ img {
     padding-left: 30px;
 }
 
-/* ========================================
-   Комментарии
-   ======================================== */
+
 .comments-section {
     margin-top: 50px;
     padding-top: 30px;
@@ -814,7 +786,7 @@ img {
     color: #e6a535;
 }
 
-/* Бейджи роли в комментариях */
+
 .comment-role-badge {
     display: inline-block;
     padding: 2px 10px;
@@ -907,9 +879,7 @@ img {
     font-size: 16px;
 }
 
-/* ========================================
-   Страница "О нас"
-   ======================================== */
+
 .about-intro {
     margin-bottom: 40px;
 }
@@ -973,9 +943,7 @@ img {
     font-weight: 600;
 }
 
-/* ========================================
-   Страница "Обратная связь"
-   ======================================== */
+
 .contact-intro {
     margin-bottom: 30px;
 }
@@ -1031,9 +999,7 @@ img {
     margin: 0;
 }
 
-/* ========================================
-   Авторизация и регистрация
-   ======================================== */
+
 .auth-container {
     max-width: 500px;
     margin: 50px auto;
@@ -1054,7 +1020,7 @@ img {
     margin-top: 20px;
 }
 
-/* reCAPTCHA */
+
 .recaptcha-wrapper {
     display: flex;
     justify-content: flex-start;
@@ -1062,9 +1028,7 @@ img {
     overflow: visible;
 }
 
-/* ========================================
-   Профиль пользователя
-   ======================================== */
+
 .profile-container {
     max-width: 900px;
 }
@@ -1168,14 +1132,12 @@ img {
     font-size: 14px;
 }
 
-/* ========================================
-   Админ-панель
-   ======================================== */
+
 .admin-container {
     max-width: 1200px;
 }
 
-/* Статистика */
+
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -1200,7 +1162,7 @@ img {
     font-size: 16px;
 }
 
-/* Секции */
+
 .admin-section {
     margin-bottom: 40px;
 }
@@ -1241,7 +1203,7 @@ img {
     color: #000000;
 }
 
-/* Кнопка «На сайт» — отличается от остальных */
+
 .nav-site-link {
     background: transparent !important;
     color: #FFB841 !important;
@@ -1294,7 +1256,7 @@ img {
     display: flex;
 }
 
-/* Кнопки действий для таблицы пользователей — вертикально */
+
 
 .users-table .admin-action-form {
     display: block;
@@ -1305,7 +1267,7 @@ img {
     display: inline-block;
 }
 
-/* Остальные таблицы — кнопки в ряд */
+
 .admin-actions {
     gap: 6px;
 }
@@ -1360,9 +1322,7 @@ img {
     color: #000000;
 }
 
-/* ========================================
-   Редактор новостей
-   ======================================== */
+
 .news-editor {
     max-width: 900px;
 }
@@ -1414,9 +1374,7 @@ img {
     cursor: pointer;
 }
 
-/* ========================================
-   Утилиты
-   ======================================== */
+
 .text-center {
     text-align: center;
 }
@@ -1433,9 +1391,7 @@ img {
     display: none;
 }
 
-/* ========================================
-   Фильтры и управление
-   ======================================== */
+
 .admin-filters {
     background: #f9f9f9;
     border: 1px solid #e0e0e0;
@@ -1518,9 +1474,7 @@ img {
     cursor: not-allowed;
 }
 
-/* ========================================
-   Поиск новостей (главная)
-   ======================================== */
+
 .news-search {
     margin-bottom: 30px;
 }
@@ -1583,9 +1537,7 @@ img {
     border-radius: var(--radius);
 }
 
-/* ========================================
-   Помощь при создании новости
-   ======================================== */
+
 .news-help {
     margin-bottom: 25px;
     border: 1px solid #e0e0e0;
@@ -1685,9 +1637,7 @@ img {
     margin-top: 8px;
 }
 
-/* ========================================
-   Адаптивность
-   ======================================== */
+
 @media (max-width: 768px) {
     .hero-slider {
         height: 400px;

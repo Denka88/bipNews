@@ -3,15 +3,12 @@ require_once 'includes/functions.php';
 
 $pdo = getDB();
 
-// Поиск
 $search = trim($_GET['search'] ?? '');
 
-// Пагинация
 $page = max(1, (int)($_GET['page'] ?? 1));
 $perPage = 10;
 $offset = ($page - 1) * $perPage;
 
-// Формируем WHERE для поиска
 $where  = '';
 $params = [];
 if ($search !== '') {
@@ -20,13 +17,11 @@ if ($search !== '') {
     $params[] = '%' . $search . '%';
 }
 
-// Получаем общее количество новостей
 $totalStmt = $pdo->prepare("SELECT COUNT(*) FROM news n $where");
 $totalStmt->execute($params);
 $totalNews = $totalStmt->fetchColumn();
 $totalPages = ceil($totalNews / $perPage);
 
-// Получаем новости с информацией об авторах
 $stmt = $pdo->prepare("
     SELECT n.*, u.username, u.avatar
     FROM news n
@@ -40,7 +35,6 @@ $newsList = $stmt->fetchAll();
 
 $pageTitle = 'BipNews - Новости техникума Бизнес и Право';
 
-// Получаем баннеры
 $bannersStmt = $pdo->query("SELECT * FROM banners WHERE active = 1 ORDER BY sort_order ASC, id ASC");
 $banners = $bannersStmt->fetchAll();
 
@@ -140,7 +134,6 @@ require 'includes/header.php';
     <div class="news-grid">
         <?php foreach ($newsList as $idx => $newsItem): ?>
             <?php
-            // Получаем первую картинку: сначала из images, затем из content
             $firstImage = '';
             if (!empty($newsItem['images'])) {
                 $images = json_decode($newsItem['images'], true);
@@ -148,15 +141,13 @@ require 'includes/header.php';
                     $firstImage = $images[0];
                 }
             }
-            
-            // Если нет картинки из images, ищем в content
+
             if (empty($firstImage) && !empty($newsItem['content'])) {
                 if (preg_match('/<img[^>]+src=["\']([^"\']+)["\']/', $newsItem['content'], $matches)) {
                     $firstImage = $matches[1];
                 }
             }
-            
-            // Определяем, внешняя ли картинка (URL) или локальная
+
             $isExternalImage = !empty($firstImage) && (strpos($firstImage, 'http://') === 0 || strpos($firstImage, 'https://') === 0 || strpos($firstImage, '//') === 0);
             ?>
             <article class="news-card">
@@ -218,7 +209,6 @@ require 'includes/header.php';
 </div>
 
 <script>
-// Слайдер баннеров
 let currentSlide = 0;
 const slides = document.querySelectorAll('.slide');
 const dots = document.querySelectorAll('.dot');
@@ -248,7 +238,6 @@ function resetInterval() {
     slideInterval = setInterval(() => changeSlide(1), 5000);
 }
 
-// Автоматическая прокрутка
 slideInterval = setInterval(() => changeSlide(1), 5000);
 </script>
 

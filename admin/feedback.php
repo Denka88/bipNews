@@ -7,7 +7,6 @@ if (!hasMinimumRole('admin')) {
 
 $pdo = getDB();
 
-// Создаём таблицу, если ещё не существует
 $pdo->exec("
     CREATE TABLE IF NOT EXISTS feedback_messages (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -20,14 +19,12 @@ $pdo->exec("
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 ");
 
-// Параметры фильтрации
 $search    = trim($_GET['search'] ?? '');
-$status    = $_GET['status'] ?? ''; // all, unread, read
+$status    = $_GET['status'] ?? '';
 $page      = max(1, (int)($_GET['page'] ?? 1));
 $perPage   = 15;
 $offset    = ($page - 1) * $perPage;
 
-// WHERE
 $where  = [];
 $params = [];
 
@@ -47,13 +44,11 @@ if ($status === 'unread') {
 
 $whereSQL = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
-// Общее количество
 $countStmt = $pdo->prepare("SELECT COUNT(*) FROM feedback_messages $whereSQL");
 $countStmt->execute($params);
 $totalMessages = (int)$countStmt->fetchColumn();
 $totalPages = max(1, ceil($totalMessages / $perPage));
 
-// Список сообщений
 $msgStmt = $pdo->prepare("
     SELECT * FROM feedback_messages
     $whereSQL
@@ -64,7 +59,6 @@ $msgParams = array_merge($params, [$perPage, $offset]);
 $msgStmt->execute($msgParams);
 $messages = $msgStmt->fetchAll();
 
-// Удаление и управление статусом
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['delete_id'])) {
         $pdo->prepare("DELETE FROM feedback_messages WHERE id = ?")->execute([(int)$_POST['delete_id']]);
@@ -309,7 +303,6 @@ function submitForm(fd) {
     .then(function() { location.reload(); });
 }
 
-// Чекбоксы
 var selectAllCheckbox = document.getElementById('select-all-checkbox');
 var checkboxes = document.querySelectorAll('.msg-checkbox');
 var bulkDeleteBtn = document.getElementById('bulk-delete-btn');
@@ -350,7 +343,6 @@ bulkDeleteBtn.addEventListener('click', function() {
     form.submit();
 });
 
-// Закрытие по клику вне окна
 document.getElementById('msg-modal').addEventListener('click', function(e) {
     if (e.target === this) closeModal();
 });

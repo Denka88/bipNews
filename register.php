@@ -1,12 +1,10 @@
 <?php
 require_once 'includes/functions.php';
 
-// Если пользователь уже авторизован, перенаправляем на главную
 if (isLoggedIn()) {
     redirect('index.php');
 }
 
-// Проверяем, настроена ли reCAPTCHA
 $recaptchaSiteKey = defined('RECAPTCHA_SITE_KEY') ? RECAPTCHA_SITE_KEY : '';
 $recaptchaSecretKey = defined('RECAPTCHA_SECRET_KEY') ? RECAPTCHA_SECRET_KEY : '';
 $isRecaptchaConfigured = $recaptchaSiteKey !== '' && $recaptchaSiteKey !== 'ВАШ_SITE_KEY'
@@ -21,8 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $birthDate = $_POST['birth_date'] ?? '';
     $password = $_POST['password'] ?? '';
     $passwordConfirm = $_POST['password_confirm'] ?? '';
-    
-    // Валидация
+
     if (empty($username)) {
         $errors[] = 'Имя пользователя обязательно';
     } elseif (preg_match('/[а-яёА-ЯЁ]/u', $username)) {
@@ -30,28 +27,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!preg_match('/^[a-zA-Z0-9_]{3,50}$/', $username)) {
         $errors[] = 'Имя пользователя должно содержать от 3 до 50 символов (латинские буквы, цифры, подчеркивание)';
     }
-    
+
     if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = 'Неверный формат email';
     }
-    
+
     if (empty($birthDate)) {
         $errors[] = 'Дата рождения обязательна';
     } elseif (!checkAge($birthDate)) {
         $errors[] = 'Регистрация доступна только для пользователей старше 14 лет';
     }
-    
+
     if (empty($password)) {
         $errors[] = 'Пароль обязателен';
     } elseif (strlen($password) < 6) {
         $errors[] = 'Пароль должен содержать минимум 6 символов';
     }
-    
+
     if ($password !== $passwordConfirm) {
         $errors[] = 'Пароли не совпадают';
     }
 
-    // Проверка reCAPTCHA
     if (empty($errors) && $isRecaptchaConfigured) {
         $recaptchaResponse = $_POST['g-recaptcha-response'] ?? '';
         if (empty($recaptchaResponse)) {
@@ -85,7 +81,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Проверка уникальности username
     if (empty($errors)) {
         $pdo = getDB();
         $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ?");
@@ -94,8 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = 'Имя пользователя уже занято';
         }
     }
-    
-    // Проверка уникальности email
+
     if (empty($errors) && !empty($email)) {
         $pdo = getDB();
         $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
@@ -104,17 +98,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = 'Email уже зарегистрирован';
         }
     }
-    
-    // Регистрация
+
     if (empty($errors)) {
         $pdo = getDB();
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-        
+
         $stmt = $pdo->prepare("
             INSERT INTO users (full_name, username, email, password, birth_date, role)
             VALUES (?, ?, ?, ?, ?, 'user')
         ");
-        
+
         try {
             $stmt->execute([
                 empty($fullName) ? null : $fullName,
@@ -123,12 +116,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $hashedPassword,
                 $birthDate
             ]);
-            
-            // Автоматическая авторизация
+
             $_SESSION['user_id'] = $pdo->lastInsertId();
             $_SESSION['user_role'] = 'user';
             $_SESSION['username'] = $username;
-            
+
             redirect('index.php');
         } catch (PDOException $e) {
             $errors[] = 'Ошибка регистрации. Попробуйте позже.';

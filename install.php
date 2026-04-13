@@ -1,13 +1,10 @@
 <?php
-// Установка базы данных BipNews
 
-// Конфигурация
 $dbHost = 'localhost';
 $dbName = 'bipnews';
 $dbUser = 'root';
 $dbPass = '';
 
-// Подключение к серверу MySQL
 try {
     $pdo = new PDO("mysql:host=$dbHost;charset=utf8mb4", $dbUser, $dbPass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -15,7 +12,6 @@ try {
     die("Ошибка подключения к MySQL: " . $e->getMessage());
 }
 
-// Проверяем, существует ли база данных
 $stmt = $pdo->query("SHOW DATABASES LIKE '$dbName'");
 $dbExists = $stmt->rowCount() > 0;
 
@@ -25,11 +21,9 @@ if ($dbExists) {
     exit;
 }
 
-// Создание базы данных
 $pdo->exec("CREATE DATABASE IF NOT EXISTS `$dbName` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
 $pdo->exec("USE `$dbName`");
 
-// Чтение SQL файла
 $sqlFile = __DIR__ . '/database.sql';
 if (!file_exists($sqlFile)) {
     die("Файл database.sql не найден!");
@@ -37,7 +31,6 @@ if (!file_exists($sqlFile)) {
 
 $sql = file_get_contents($sqlFile);
 
-// Удаляем первую строку CREATE DATABASE из SQL файла, т.к. мы уже создали БД
 $lines = explode("\n", $sql);
 $sqlFiltered = [];
 $useNext = false;
@@ -54,10 +47,8 @@ foreach ($lines as $line) {
     }
 }
 
-// Разделяем SQL на отдельные запросы
 $queries = array_filter(array_map('trim', explode(";", implode("\n", $sqlFiltered))));
 
-// Выполняем каждый запрос
 foreach ($queries as $query) {
     if (empty($query)) continue;
     try {
@@ -67,7 +58,6 @@ foreach ($queries as $query) {
     }
 }
 
-// Создаем папки для загрузок
 $uploadDirs = [
     __DIR__ . '/uploads',
     __DIR__ . '/uploads/avatars',
@@ -80,7 +70,6 @@ foreach ($uploadDirs as $dir) {
     }
 }
 
-// Создаем .htaccess для запрета выполнения PHP в папках загрузок
 $htaccessContent = "Options -ExecCGI\nAddHandler cgi-script .php .pl .py .jsp .asp .sh\n";
 foreach ([$uploadDirs[1], $uploadDirs[2]] as $dir) {
     file_put_contents($dir . '/.htaccess', $htaccessContent);

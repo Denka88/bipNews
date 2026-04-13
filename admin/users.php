@@ -1,21 +1,19 @@
 <?php
 require_once '../includes/functions.php';
 
-// Проверка прав доступа (только администраторы)
 if (!hasMinimumRole('admin')) {
     redirect('index.php');
 }
 
 $pdo = getDB();
 
-// Обработка действий
 $message = null;
 $error = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     $userId = (int)($_POST['user_id'] ?? 0);
-    
+
     if ($action === 'toggle_ban' && $userId) {
         if ($userId == $_SESSION['user_id']) {
             $error = 'Нельзя заблокировать свой аккаунт';
@@ -24,22 +22,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = 'Статус пользователя изменён';
         }
     } elseif ($action === 'delete' && $userId) {
-        // Нельзя удалить самого себя
         if ($userId == $_SESSION['user_id']) {
             $error = 'Нельзя удалить свой аккаунт';
         } else {
-            // Получаем данные пользователя для удаления аватара
             $userStmt = $pdo->prepare("SELECT avatar FROM users WHERE id = ?");
             $userStmt->execute([$userId]);
             $user = $userStmt->fetch();
-            
+
             if ($user) {
-                // Удаляем аватар
                 if ($user['avatar'] && file_exists(__DIR__ . '/../uploads/avatars/' . $user['avatar'])) {
                     unlink(__DIR__ . '/../uploads/avatars/' . $user['avatar']);
                 }
-                
-                // Удаляем пользователя (новости и комментарии удалятся каскадно)
+
                 $deleteStmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
                 $deleteStmt->execute([$userId]);
                 $message = 'Пользователь успешно удален';
@@ -47,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif ($action === 'change_role' && $userId) {
         $newRole = $_POST['role'] ?? '';
-        
+
         if (!in_array($newRole, ['user', 'moderator', 'admin'])) {
             $error = 'Неверная роль';
         } elseif ($userId == $_SESSION['user_id']) {
@@ -60,16 +54,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Пагинация и фильтрация
 $page     = max(1, (int)($_GET['page'] ?? 1));
 $perPage  = 20;
 $offset   = ($page - 1) * $perPage;
 
 $search   = trim($_GET['search'] ?? '');
-$role     = $_GET['role'] ?? '';        // user, moderator, admin
-$status   = $_GET['status'] ?? '';      // active, banned
+$role     = $_GET['role'] ?? '';
+$status   = $_GET['status'] ?? '';
 
-// WHERE
 $where  = [];
 $params = [];
 
@@ -93,13 +85,11 @@ if ($status === 'active') {
 
 $whereSQL = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
-// Общее количество
 $countStmt = $pdo->prepare("SELECT COUNT(*) FROM users $whereSQL");
 $countStmt->execute($params);
 $totalUsers = (int)$countStmt->fetchColumn();
 $totalPages = max(1, ceil($totalUsers / $perPage));
 
-// Получаем пользователей
 $stmt = $pdo->prepare("
     SELECT * FROM users
     $whereSQL
@@ -115,7 +105,7 @@ require '../includes/header.php';
 
 <div class="admin-container">
     <h1 class="admin-title">Управление пользователями</h1>
-    
+
     <div class="admin-nav">
         <a href="index.php">Обзор</a>
         <a href="news_create.php">Создать новость</a>
@@ -126,11 +116,11 @@ require '../includes/header.php';
         <a href="banners.php">Баннеры</a>
         <a href="../index.php" class="nav-site-link">На сайт <i class="fas fa-external-link-alt"></i></a>
     </div>
-    
+
     <?php if ($message): ?>
         <div class="form-success"><?= e($message) ?></div>
     <?php endif; ?>
-    
+
     <?php if ($error): ?>
         <div class="form-error"><?= e($error) ?></div>
     <?php endif; ?>
@@ -243,7 +233,7 @@ require '../includes/header.php';
                 <?php endforeach; ?>
             </tbody>
         </table>
-        
+
         <?php if ($totalPages > 1): ?>
             <div class="admin-pagination">
                 <?php

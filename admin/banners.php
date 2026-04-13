@@ -7,7 +7,6 @@ if (!hasMinimumRole('admin')) {
 
 $pdo = getDB();
 
-// Загрузка баннера
 if (isset($_POST['upload_banner'])) {
     if (isset($_FILES['banner_image']) && $_FILES['banner_image']['error'] === UPLOAD_ERR_OK) {
         $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -35,7 +34,6 @@ if (isset($_POST['upload_banner'])) {
     }
 }
 
-// Удаление баннера
 if (isset($_POST['delete_banner'])) {
     $bannerId = (int)$_POST['banner_id'];
     $stmt = $pdo->prepare("SELECT image FROM banners WHERE id = ?");
@@ -50,13 +48,11 @@ if (isset($_POST['delete_banner'])) {
     $success = 'Баннер удалён';
 }
 
-// Переключение активности
 if (isset($_POST['toggle_active'])) {
     $bannerId = (int)$_POST['banner_id'];
     $pdo->prepare("UPDATE banners SET active = NOT active WHERE id = ?")->execute([$bannerId]);
 }
 
-// Получаем все баннеры
 $banners = $pdo->query("SELECT * FROM banners ORDER BY sort_order ASC, id DESC")->fetchAll();
 
 $pageTitle = 'Управление баннерами - BipNews';

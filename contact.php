@@ -1,7 +1,6 @@
 <?php
 require_once 'includes/functions.php';
 
-// Проверяем, настроена ли reCAPTCHA
 $recaptchaSiteKey = defined('RECAPTCHA_SITE_KEY') ? RECAPTCHA_SITE_KEY : '';
 $recaptchaSecretKey = defined('RECAPTCHA_SECRET_KEY') ? RECAPTCHA_SECRET_KEY : '';
 $isRecaptchaConfigured = $recaptchaSiteKey !== '' && $recaptchaSiteKey !== 'ВАШ_SITE_KEY'
@@ -28,7 +27,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Сообщение слишком короткое (минимум 10 символов)';
     }
 
-    // Проверка reCAPTCHA
     if (empty($error) && $isRecaptchaConfigured) {
         $recaptchaResponse = $_POST['g-recaptcha-response'] ?? '';
         if (empty($recaptchaResponse)) {
@@ -65,7 +63,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($error)) {
         $pdo = getDB();
 
-        // Создаём таблицу, если ещё не существует
         $pdo->exec("
             CREATE TABLE IF NOT EXISTS feedback_messages (
                 id INT AUTO_INCREMENT PRIMARY KEY,

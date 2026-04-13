@@ -29,10 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_news'])) {
     if (empty($content)) $errors[] = 'Содержание обязательно';
 
     if (empty($errors)) {
-        // Санитизация контента (удаляем опасные теги и атрибуты)
         $content = sanitizeNewsContent($content);
 
-        // Обрабатываем удалённые картинки
         $existingImages = !empty($news['images']) ? json_decode($news['images'], true) : [];
         if (!empty($removedImages)) {
             $toRemove = array_filter(array_map('trim', explode(',', $removedImages)));
@@ -47,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_news'])) {
             $existingImages = array_values($existingImages);
         }
 
-        // Добавляем новые
         if (!empty($imagesRaw)) {
             $newImages = array_filter(array_map('trim', explode(',', $imagesRaw)));
             foreach ($newImages as $ni) {
@@ -229,7 +226,6 @@ document.addEventListener('DOMContentLoaded', function() {
             var filename = e.target.getAttribute('data-filename');
             if (!confirm('Удалить изображение?')) return;
 
-            // Если существующая — добавляем в удалённые
             var isNew = newFiles.indexOf(filename) !== -1;
             if (!isNew) {
                 removedFiles.push(filename);

@@ -3,14 +3,12 @@ require_once 'includes/functions.php';
 
 $pdo = getDB();
 
-// Получаем ID пользователя из параметра
 $userId = (int)($_GET['id'] ?? 0);
 
 if (!$userId) {
     redirect('index.php');
 }
 
-// Получаем данные пользователя
 $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$userId]);
 $profileUser = $stmt->fetch();
@@ -19,7 +17,6 @@ if (!$profileUser) {
     redirect404();
 }
 
-// Обработка редактирования профиля (только для своего профиля)
 $isOwnProfile = isLoggedIn() && $_SESSION['user_id'] == $userId;
 $isAdmin = hasMinimumRole('admin');
 $canEdit = $isOwnProfile;
@@ -27,7 +24,6 @@ $canEdit = $isOwnProfile;
 $errors = [];
 $success = null;
 
-// Обработка бана/разбана
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ban_action'])) {
     if (hasMinimumRole('moderator')) {
         $banUserId = (int)($_POST['ban_user_id'] ?? 0);
@@ -43,13 +39,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canEdit) {
     $fullName = trim($_POST['full_name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $aboutMe = trim($_POST['about_me'] ?? '');
-    
-    // Валидация email
+
     if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = 'Неверный формат email';
     }
-    
-    // Проверка уникальности email (если изменился)
+
     if (empty($errors) && !empty($email) && $email !== $profileUser['email']) {
         $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE email = ? AND id != ?");
         $checkStmt->execute([$email, $userId]);
@@ -57,25 +51,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canEdit) {
             $errors[] = 'Этот email уже используется';
         }
     }
-    
-    // Загрузка аватара
+
     $avatarFileName = $profileUser['avatar'];
     if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
         $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        $maxSize = 2 * 1024 * 1024; // 2MB
-        
+        $maxSize = 2 * 1024 * 1024;
+
         if (!in_array($_FILES['avatar']['type'], $allowedTypes)) {
             $errors[] = 'Допустимые форматы аватара: JPEG, PNG, GIF, WebP';
         } elseif ($_FILES['avatar']['size'] > $maxSize) {
             $errors[] = 'Размер аватара не должен превышать 2 МБ';
         } else {
-            // Генерируем уникальное имя файла
             $extension = pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION);
             $avatarFileName = 'avatar_' . $userId . '_' . time() . '.' . $extension;
             $uploadPath = __DIR__ . '/uploads/avatars/' . $avatarFileName;
 
             if (move_uploaded_file($_FILES['avatar']['tmp_name'], $uploadPath)) {
-                // Удаляем старый аватар
                 if ($profileUser['avatar'] && file_exists(__DIR__ . '/uploads/avatars/' . $profileUser['avatar'])) {
                     unlink(__DIR__ . '/uploads/avatars/' . $profileUser['avatar']);
                 }
@@ -85,15 +76,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canEdit) {
             }
         }
     }
-    
-    // Обновление профиля
+
     if (empty($errors)) {
         $updateStmt = $pdo->prepare("
-            UPDATE users 
+            UPDATE users
             SET full_name = ?, email = ?, about_me = ?, avatar = ?
             WHERE id = ?
         ");
-        
+
         try {
             $updateStmt->execute([
                 empty($fullName) ? null : $fullName,
@@ -102,10 +92,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canEdit) {
                 $avatarFileName,
                 $userId
             ]);
-            
+
             $success = 'Профиль успешно обновлен';
-            
-            // Обновляем данные пользователя
+
             $stmt->execute([$userId]);
             $profileUser = $stmt->fetch();
         } catch (PDOException $e) {
@@ -114,12 +103,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canEdit) {
     }
 }
 
-// Получаем комментарии пользователя с пагинацией
 $profilePage = max(1, (int)($_GET['page'] ?? 1));
 $profilePerPage = 10;
 $profileOffset = ($profilePage - 1) * $profilePerPage;
 
-// Общее количество
 $totalCommentsStmt = $pdo->prepare("SELECT COUNT(*) FROM comments WHERE user_id = ?");
 $totalCommentsStmt->execute([$userId]);
 $totalCommentsCount = (int)$totalCommentsStmt->fetchColumn();

@@ -17,10 +17,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_news'])) {
     if (empty($content)) $errors[] = 'Содержание обязательно';
 
     if (empty($errors)) {
-        // Санитизация контента (удаляем опасные теги и атрибуты)
         $content = sanitizeNewsContent($content);
 
-        // Парсим список картинок
         $images = [];
         if (!empty($imagesRaw)) {
             $images = array_filter(array_map('trim', explode(',', $imagesRaw)));
@@ -169,25 +167,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const imagesContainer = document.getElementById('uploaded-images-container');
     const imagesDataInput = document.getElementById('images-data');
 
-    // Массив загруженных файлов
     let uploadedFiles = [];
 
-    // Нажатие на кнопку загрузки
     uploadBtn.addEventListener('click', function() {
         fileInput.click();
     });
 
-    // Выбор файла
     fileInput.addEventListener('change', function() {
         const file = this.files[0];
         if (!file) return;
 
-        // Превью
         const reader = new FileReader();
         reader.onload = function(e) {
             const previewUrl = e.target.result;
 
-            // Отправка на сервер
             const formData = new FormData();
             formData.append('image', file);
 
@@ -198,11 +191,9 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 if (data.success) {
-                    // Добавляем в массив
                     uploadedFiles.push(data.filename);
                     updateImagesData();
 
-                    // Добавляем превью
                     addImagePreview(data.filename, previewUrl);
                 } else {
                     alert('Ошибка: ' + (data.message || 'Неизвестная'));
@@ -217,7 +208,6 @@ document.addEventListener('DOMContentLoaded', function() {
         this.value = '';
     });
 
-    // Добавить превью в контейнер
     function addImagePreview(filename, previewUrl) {
         var item = document.createElement('div');
         item.className = 'uploaded-image-item';
@@ -236,14 +226,11 @@ document.addEventListener('DOMContentLoaded', function() {
         imagesContainer.appendChild(item);
     }
 
-    // Обновить скрытое поле
     function updateImagesData() {
         imagesDataInput.value = uploadedFiles.join(',');
     }
 
-    // Клик по кнопкам (делегирование)
     imagesContainer.addEventListener('click', function(e) {
-        // Вставить
         if (e.target.classList.contains('btn-insert') && contentEl) {
             var fn = e.target.getAttribute('data-filename');
             var html = '\n<img src="uploads/news/' + fn + '" alt="Изображение">\n';
@@ -255,19 +242,16 @@ document.addEventListener('DOMContentLoaded', function() {
             contentEl.selectionStart = contentEl.selectionEnd = start + insert.length;
         }
 
-        // Удалить
         if (e.target.classList.contains('btn-remove')) {
             var filename = e.target.getAttribute('data-filename');
             if (!confirm('Удалить изображение?')) return;
 
-            // Удаляем с сервера
             fetch('upload_image.php?action=delete&filename=' + encodeURIComponent(filename), {
                 method: 'POST'
             })
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 if (data.success) {
-                    // Удаляем из массива
                     var idx = uploadedFiles.indexOf(filename);
                     if (idx > -1) uploadedFiles.splice(idx, 1);
                     updateImagesData();
@@ -275,17 +259,14 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(function() {});
 
-            // Удаляем превью
             var item = e.target.closest('.uploaded-image-item');
             if (item) item.remove();
         }
     });
 
-    // Вставка по URL
     urlBtn.addEventListener('click', function() {
         var url = prompt('Введите URL изображения:');
         if (url && contentEl) {
-            // Проверяем, что это допустимый URL картинки
             url = url.trim();
             if (!url.match(/^https?:\/\/[^\s"'<>]+$/i)) {
                 alert('Введите корректный URL, начинающийся с http:// или https://');
@@ -302,7 +283,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Переключение блока помощи
 function toggleNewsHelp() {
     var content = document.getElementById('news-help-content');
     var btn = document.querySelector('.news-help-toggle');

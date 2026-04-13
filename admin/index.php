@@ -1,30 +1,26 @@
 <?php
 require_once '../includes/functions.php';
 
-// Проверка прав доступа (только администраторы)
 if (!hasMinimumRole('admin')) {
     redirect('index.php');
 }
 
 $pdo = getDB();
 
-// Статистика
 $stats = [];
 $stats['users'] = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
 $stats['news'] = $pdo->query("SELECT COUNT(*) FROM news")->fetchColumn();
 $stats['comments'] = $pdo->query("SELECT COUNT(*) FROM comments")->fetchColumn();
 
-// Последние новости
 $latestNewsStmt = $pdo->query("
-    SELECT n.*, u.username 
-    FROM news n 
-    LEFT JOIN users u ON n.author_id = u.id 
-    ORDER BY n.created_at DESC 
+    SELECT n.*, u.username
+    FROM news n
+    LEFT JOIN users u ON n.author_id = u.id
+    ORDER BY n.created_at DESC
     LIMIT 10
 ");
 $latestNews = $latestNewsStmt->fetchAll();
 
-// Последние комментарии
 $latestCommentsStmt = $pdo->query("
     SELECT c.*, u.username, n.title as news_title, n.slug as news_slug
     FROM comments c
@@ -41,7 +37,7 @@ require '../includes/header.php';
 
 <div class="admin-container">
     <h1 class="admin-title">Админ-панель</h1>
-    
+
     <!-- Навигация -->
     <div class="admin-nav">
         <a href="index.php" class="active">Обзор</a>
@@ -53,7 +49,7 @@ require '../includes/header.php';
         <a href="banners.php">Баннеры</a>
         <a href="../index.php" class="nav-site-link">На сайт <i class="fas fa-external-link-alt"></i></a>
     </div>
-    
+
     <!-- Статистика -->
     <div class="stats-grid">
         <div class="stat-card">
@@ -69,11 +65,11 @@ require '../includes/header.php';
             <div class="stat-label">Комментариев</div>
         </div>
     </div>
-    
+
     <!-- Последние новости -->
     <div class="admin-section">
         <h2 class="section-title">Последние новости</h2>
-        
+
         <?php if (empty($latestNews)): ?>
             <p style="color: #999;">Новостей пока нет</p>
         <?php else: ?>
@@ -106,11 +102,11 @@ require '../includes/header.php';
             </table>
         <?php endif; ?>
     </div>
-    
+
     <!-- Последние комментарии -->
     <div class="admin-section">
         <h2 class="section-title">Последние комментарии</h2>
-        
+
         <?php if (empty($latestComments)): ?>
             <p style="color: #999;">Комментариев пока нет</p>
         <?php else: ?>

@@ -1,7 +1,6 @@
 <?php
 require_once 'includes/functions.php';
 
-// Если пользователь уже авторизован, перенаправляем на главную
 if (isLoggedIn()) {
     redirect('index.php');
 }
@@ -11,30 +10,28 @@ $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
-    
+
     if (empty($username)) {
         $errors[] = 'Введите имя пользователя';
     }
-    
+
     if (empty($password)) {
         $errors[] = 'Введите пароль';
     }
-    
+
     if (empty($errors)) {
         $pdo = getDB();
         $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
         $stmt->execute([$username]);
         $user = $stmt->fetch();
-        
+
         if (!$user || !password_verify($password, $user['password'])) {
             $errors[] = 'Неверное имя пользователя или пароль';
         } else {
-            // Успешная авторизация
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_role'] = $user['role'];
             $_SESSION['username'] = $user['username'];
-            
-            // Перенаправляем на страницу, с которой пришли, или на главную
+
             $redirect = $_GET['redirect'] ?? 'index.php';
             redirect($redirect);
         }

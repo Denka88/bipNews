@@ -8,7 +8,6 @@ if (!hasMinimumRole('admin')) {
     exit;
 }
 
-// Удаление
 if (isset($_GET['action']) && $_GET['action'] === 'delete') {
     $filename = basename($_GET['filename'] ?? '');
     if ($filename) {
@@ -23,7 +22,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'delete') {
     exit;
 }
 
-// Загрузка
 if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
     echo json_encode(['success' => false, 'message' => 'Ошибка загрузки']);
     exit;

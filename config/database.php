@@ -1,13 +1,10 @@
 <?php
-// Конфигурация базы данных
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'bipnews');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 define('DB_CHARSET', 'utf8mb4');
 
-// Google reCAPTCHA v2
-// Получите ключи: https://www.google.com/recaptcha/admin/create
 define('RECAPTCHA_SITE_KEY', '6LcCW7IsAAAAAN2Gnijy082Zwyyjp6Li5zdGpMtA');
 define('RECAPTCHA_SECRET_KEY', '6LcCW7IsAAAAAAFdq6AYUgjBXv5IKbTfJ4lw5a_w');
 

@@ -3,7 +3,6 @@ require_once __DIR__ . '/functions.php';
 $currentUser = getCurrentUser();
 $pageTitle = $pageTitle ?? 'BipNews - Новости техникума Бизнес и Право';
 
-// Определяем префикс пути в зависимости от расположения
 $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
 $pathPrefix = (strpos($scriptDir, 'admin') !== false) ? '../' : '';
 ?>
