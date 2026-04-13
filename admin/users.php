@@ -100,6 +100,7 @@ $stmt->execute(array_merge($params, [$perPage, $offset]));
 $users = $stmt->fetchAll();
 
 $pageTitle = 'Управление пользователями - Админ-панель';
+$pageDescription = 'Управление пользователями портала BipNews. Изменение ролей, блокировка и удаление аккаунтов пользователей.';
 require '../includes/header.php';
 ?>
 

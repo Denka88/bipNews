@@ -81,6 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_comment'])) {
 }
 
 $pageTitle = e($news['title']) . ' - BipNews';
+$pageDescription = mb_substr(strip_tags($news['content'] ?? ''), 0, 200) . '...';
 require 'includes/header.php';
 ?>
 

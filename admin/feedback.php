@@ -78,6 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $successMsg = $successMsg ?? null;
 
 $pageTitle = 'Обратная связь - Админ-панель';
+$pageDescription = 'Сообщения обратной связи портала BipNews. Просмотр, отметка прочитанным и удаление обращений пользователей.';
 require '../includes/header.php';
 ?>
 

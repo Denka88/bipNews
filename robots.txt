@@ -1,0 +1,13 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /includes/
+Disallow: /config/
+Disallow: /uploads/
+Disallow: /assets/
+Disallow: /login.php
+Disallow: /register.php
+Disallow: /profile.php
+Disallow: /logout.php
+Disallow: /comments.php
+
+Host: localhost

@@ -2,6 +2,7 @@
 require_once 'includes/functions.php';
 
 $pageTitle = 'О нас - BipNews';
+$pageDescription = 'Узнайте больше о новостном портале BipNews — информационной платформе техникума Бизнес и Право для студентов и преподавателей.';
 require 'includes/header.php';
 ?>
 

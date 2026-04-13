@@ -56,6 +56,7 @@ if (isset($_POST['toggle_active'])) {
 $banners = $pdo->query("SELECT * FROM banners ORDER BY sort_order ASC, id DESC")->fetchAll();
 
 $pageTitle = 'Управление баннерами - BipNews';
+$pageDescription = 'Управление баннерами главной страницы портала BipNews. Загрузка, сортировка и активация баннеров слайдера.';
 require '../includes/header.php';
 ?>
 

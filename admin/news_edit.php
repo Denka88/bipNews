@@ -72,6 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_news'])) {
 $existingImages = !empty($news['images']) ? json_decode($news['images'], true) : [];
 
 $pageTitle = 'Редактировать новость - Админ-панель';
+$pageDescription = 'Редактирование новости на портале BipNews. Изменение заголовка, содержимого и изображений публикации.';
 require '../includes/header.php';
 ?>
 

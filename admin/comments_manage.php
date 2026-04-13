@@ -85,6 +85,7 @@ $successMsg    = $_GET['deleted'] ?? '';
 $bulkSuccessMsg = $_GET['bulk_deleted'] ?? '';
 
 $pageTitle = 'Управление комментариями - Админ-панель';
+$pageDescription = 'Управление комментариями портала BipNews. Модерация, поиск, фильтрация и удаление комментариев пользователей.';
 require '../includes/header.php';
 ?>
 

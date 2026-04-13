@@ -2,6 +2,7 @@
 require_once 'includes/functions.php';
 
 $pageTitle = '404 - Страница не найдена | BipNews';
+$pageDescription = 'Запрашиваемая страница не найдена на портале BipNews. Вернитесь на главную для просмотра актуальных новостей техникума Бизнес и Право.';
 require 'includes/header.php';
 ?>
 

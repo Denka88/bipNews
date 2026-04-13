@@ -46,6 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_news'])) {
 }
 
 $pageTitle = 'Создать новость - Админ-панель';
+$pageDescription = 'Создание новой новости на портале BipNews. Добавление заголовка, содержимого и изображений для публикации.';
 require '../includes/header.php';
 ?>
 

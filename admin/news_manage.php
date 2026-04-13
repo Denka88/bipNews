@@ -79,6 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
 $successMsg = $_GET['deleted'] ?? '';
 
 $pageTitle = 'Управление новостями - Админ-панель';
+$pageDescription = 'Управление новостями портала BipNews. Создание, редактирование, поиск и удаление публикаций о событиях техникума.';
 require '../includes/header.php';
 ?>
 

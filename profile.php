@@ -124,6 +124,7 @@ $commentsStmt->execute([$userId, $profilePerPage, $profileOffset]);
 $userComments = $commentsStmt->fetchAll();
 
 $pageTitle = e($profileUser['username']) . ' - Профиль - BipNews';
+$pageDescription = 'Профиль пользователя ' . e($profileUser['username']) . ' на портале BipNews. Информация о пользователе и его комментарии.';
 require 'includes/header.php';
 ?>
 

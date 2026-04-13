@@ -39,6 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pageTitle = 'Вход - BipNews';
+$pageDescription = 'Войдите в аккаунт на портале BipNews для доступа к комментариям и обсуждению новостей техникума Бизнес и Право.';
 require 'includes/header.php';
 ?>
 

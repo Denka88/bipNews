@@ -87,6 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pageTitle = 'Обратная связь - BipNews';
+$pageDescription = 'Свяжитесь с администрацией портала BipNews. Отправьте сообщение по вопросам публикации новостей и работы сайта техникума Бизнес и Право.';
 require 'includes/header.php';
 ?>
 

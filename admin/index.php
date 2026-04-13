@@ -32,6 +32,7 @@ $latestCommentsStmt = $pdo->query("
 $latestComments = $latestCommentsStmt->fetchAll();
 
 $pageTitle = 'Админ-панель - BipNews';
+$pageDescription = 'Панель администратора портала BipNews. Статистика, управление пользователями, новостями, комментариями и баннерами.';
 require '../includes/header.php';
 ?>
 

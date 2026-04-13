@@ -34,6 +34,7 @@ $stmt->execute(array_merge($params, [$perPage, $offset]));
 $newsList = $stmt->fetchAll();
 
 $pageTitle = 'BipNews - Новости техникума Бизнес и Право';
+$pageDescription = 'Актуальные новости и события техникума Бизнес и Право. Читайте новости, обсужайте с другими студентами и будьте в курсе жизни учебного заведения.';
 
 $bannersStmt = $pdo->query("SELECT * FROM banners WHERE active = 1 ORDER BY sort_order ASC, id ASC");
 $banners = $bannersStmt->fetchAll();

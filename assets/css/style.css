@@ -426,6 +426,26 @@ img {
     color: #FFFFFF;
 }
 
+.footer-github {
+    text-align: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-github a {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 14px;
+    transition: color 0.2s;
+}
+
+.footer-github a:hover {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.footer-github a i {
+    margin-right: 4px;
+}
 
 .btn {
     display: inline-block;

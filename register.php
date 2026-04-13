@@ -129,6 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pageTitle = 'Регистрация - BipNews';
+$pageDescription = 'Зарегистрируйтесь на портале BipNews. Создайте аккаунт для обсуждения новостей и взаимодействия с сообществом техникума Бизнес и Право.';
 require 'includes/header.php';
 ?>
 

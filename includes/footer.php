@@ -19,6 +19,9 @@
                     <?php endif; ?>
                 </div>
             </div>
+            <div class="footer-github">
+                <a href="https://github.com/Denka88" target="_blank" rel="nofollow noopener"><i class="fab fa-github"></i> GitHub</a>
+            </div>
         </div>
     </footer>
     
